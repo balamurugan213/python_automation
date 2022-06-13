@@ -20,8 +20,8 @@ dest_dir_documents = "Z:/Documents"
 dest_dir_runnable = "Z:/Runnable"
 
 # ? supported image types
-image_extensions = [".jpg", ".jpeg", ".jpe", ".jif", ".jfif", ".jfi", ".png", ".gif", ".webp", ".tiff", ".tif", ".psd", ".raw", ".arw", ".cr2", ".nrw",
-                    ".k25", ".bmp", ".dib", ".heif", ".heic", ".ind", ".indd", ".indt", ".jp2", ".j2k", ".jpf", ".jpf", ".jpx", ".jpm", ".mj2", ".svg", ".svgz", ".ai", ".eps", ".ico"]
+image_extensions = [".jpg", ".jpeg", ".jpe", ".jif", ".jfif", ".jfi", ".png", ".gif", ".webp", ".tiff", ".tif", ".psd", ".raw", ".arw", ".cr2", ".nrw", ".k25",
+                    ".bmp", ".dib", ".heif", ".heic", ".ind", ".indd", ".indt", ".jp2", ".j2k", ".jpf", ".jpf", ".jpx", ".jpm", ".mj2", ".svg", ".svgz", ".ai", ".eps", ".ico"]
 # ? supported Video types
 video_extensions = [".webm", ".mpg", ".mp2", ".mpeg", ".mpe", ".mpv", ".ogg",
                     ".mp4", ".mp4v", ".m4v", ".avi", ".wmv", ".mov", ".qt", ".flv", ".swf", ".avchd"]
@@ -30,31 +30,39 @@ audio_extensions = [".m4a", ".flac", "mp3", ".wav", ".wma", ".aac"]
 # ? supported Document types
 document_extensions = [".doc", ".docx", ".odt",
                        ".pdf", ".xls", ".xlsx", ".ppt", ".pptx"]
-
 # ? supported software types
 runnable_extensions = [".exe", ".torrent", ".zip"]
 
 
-def make_unique(path):
-    filename, extension = splitext(path)
+def make_unique(dest, name):
+    print('Start make_unique()')
+    filename, extension = splitext(name)
     counter = 1
     # * IF FILE EXISTS, ADDS NUMBER TO THE END OF THE FILENAME
-    while exists(path):
-        path = f"{filename} ({counter}){extension}"
+    while exists(os.path.join(dest, name)):
+        name = f"{filename} ({counter}){extension}"
         counter += 1
 
-    return path
+    return name
 
 
 def move_file(dest, entry, name):
-    if exists(f"{dest}/{name}"):
-        unique_name = make_unique(name)
-        rename(entry, unique_name)
-    shutil.move(entry, dest)
+    try:
+        if not (exists(dest)):
+            os.makedirs(dest)
+            print("The new directory is created!")
 
-# with scandir(source_dir) as entries:
-#     for entry in entries:
-#         print(entry.name)
+        if not os.path.exists(os.path.join(dest, name)):
+            shutil.move(entry.path, os.path.join(dest, name))
+
+        else:
+            unique_name = make_unique(dest, name)
+            shutil.move(entry.path, os.path.join(dest, unique_name))
+
+    except Exception as e:
+        logging.error(
+            f'move() -> destination {dest}; entry {entry}; name {name}')
+        logging.error(f'Exception throwed: {e}')
 
 
 class MoverHandler(FileSystemEventHandler):
